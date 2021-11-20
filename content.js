@@ -127,7 +127,7 @@ function getTexts(cues_sep)
             
         }
         else
-        {   var temp_punctuation = cuesSepList[i][cuesSepList[i].length-1]+" z~z "
+        {   var temp_punctuation = " "+cuesSepList[i][cuesSepList[i].length-1]+" z~z "
             temp_punctuation = cuesSepList[i].substr(0,cuesSepList[i].length-1) + temp_punctuation
             cuesSepList[i] = temp_punctuation
             text+=cuesSepList[i]
