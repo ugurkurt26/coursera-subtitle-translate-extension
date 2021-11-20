@@ -6,7 +6,7 @@ async function openBilingual () {
   
   let tracks = document.getElementsByTagName('track')
   let en
-  let tr
+  
   if (tracks.length) {
 
     for (let i = 0; i < tracks.length; i++) 
@@ -22,54 +22,62 @@ async function openBilingual () {
       en.track.mode = 'showing'
 
       await sleep(500)
-      let cues = en.track.cues
       
-      //İngilizce yazıdaki cümle bitiş anlarının tespiti.
-      // .....cümle bitti. Yeni cümle 
-      //Burada sadece nokta karakterinden sonra boşluk olan durumlarda cümlenin bittiği varsayılmıştır.
-      // 75.3 , model.fit gibi özel ifade belirten durumlarda noktayı cümle bitişi olarak algılamaması için.
+      let cues_org = en.track.cues
+      let tempcues = [];
+      for(let i=0;i<cues_org.length;i++)
+      {
+          tempcues.push(cues_org[i].text)
+
+      }
+      var cues = JSON.parse(JSON.stringify(tempcues));
+      
       var endSentence = []
       for(let i=0;i<cues.length;i++)
       {
-        for(let j=0;j<cues[i].text.length;j++)
-        {
-          if(cues[i].text[j] == '.' && cues[i].text[j+1] == undefined)
+          for(let j=0;j<cues[i].length;j++)
           {
-            endSentence.push(i)
+              if((cues[i][j] == '.' ||
+              cues[i][j] == '?' ||
+              cues[i][j] == '!' ||
+              cues[i][j] == '"') && cues[i][j+1] == undefined)
+              {
+              endSentence.push(i)
+              }
           }
-        }
       }
-      ///////////////////////
-
 
       var cuesTextList = getTexts(cues)
 
-      getTranslation(cuesTextList, translatedText => {
+      for(let n=0;n<=cuesTextList.length;n++)
+      {
+        getTranslation(cuesTextList[n].text, translatedText => 
+          { 
 
-        var translatedList = translatedText.split(' z~~~z')
-        translatedList.splice(-1,1)
+          var translatedList = translatedText.split(' z~z')
+          translatedList.splice(-1,1)
 
-        for(let i=0;i<endSentence.length;i++)
-        {
-          if(i!=0)
+          for(let i=cuesTextList[n].start;i<=cuesTextList[n].end;i++)
           {
-            for(let j=endSentence[i-1]+1;j<=endSentence[i];j++)
+            if(i!=0)
             {
-              cues[j].text = translatedList[i]
-              //console.log(translatedList[i])
-              
+              for(let j=endSentence[i-1]+1;j<=endSentence[i];j++)
+              {
+                cues_org[j].text = translatedList[i-cuesTextList[n].start]
+              }
+            }
+            else
+            {
+              for(let j=0;j<=endSentence[i];j++)
+              {
+                cues_org[j].text = translatedList[i]
+              }
             }
           }
-          else
-          {
-            for(let j=0;j<=endSentence[i];j++)
-            {
-              cues[j].text = translatedList[i]
-              //console.log(translatedList[i])
-            }
-          }
-        }
-      })
+        });
+        await sleep(5000)
+      };
+
     }
   }
 }
@@ -82,29 +90,56 @@ function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function getTexts(cues)
+function getTexts(cues_sep)
 {
-  let cuesTextList = ""
-  for(let i=0;i < cues.length;i++)
-  {
-    /*for(let j=0;j<cues[i].text.length;j++)
+    let cuesTextList = ""
+    for(let i=0;i < cues_sep.length;i++)
     {
-      if(cues[i].text[j] == '.' && cues[i].text[j+1] == ' ')
-      {
-        cues[i].text = cues[i].text.replaceAt(j, ",")
-      }
-    }*/
 
-    if(cues[i].text[cues[i].text.length-1] == '.')
+    if(cues_sep[i][cues_sep[i].length-1] == '.')
+        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, ". z~z ")
+    else if(cues_sep[i][cues_sep[i].length-1] == '?')
+        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "? z~z ")
+    else if(cues_sep[i][cues_sep[i].length-1] == '!')
+        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "! z~z ")
+    else if(cues_sep[i][cues_sep[i].length-1] == '"')
+        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "\" z~z ")
+
+    cues_sep[i] = cues_sep[i].replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+    cuesTextList+= cues_sep[i].replace(/\n/g, ' ') + " "
+    }
+
+    var cuesSepList = cuesTextList.split(' z~z')
+    cuesSepList.splice(-1,1)
+
+    let listOutput = []
+    let text = "";
+    let j = 0;
+    let i =0;
+
+    while(i<cuesSepList.length)
     {
-       cues[i].text = cues[i].text.replaceAt(cues[i].text.length-1, ". z~~~z ")
-       //console.log(cues[i].text.replaceAt(cues[i].text.length-1, ". z~~~z "))
+        if(text.length>4000)
+        {
+            listOutput.push({text : text , start : j , end : i-1});
+            text = "";
+            j = i;
+            
+        }
+        else
+        {   var temp_punctuation = cuesSepList[i][cuesSepList[i].length-1]+" z~z "
+            temp_punctuation = cuesSepList[i].substr(0,cuesSepList[i].length-1) + temp_punctuation
+            cuesSepList[i] = temp_punctuation
+            text+=cuesSepList[i]
+            i++;
+        }
+
+    }
+    listOutput.push({text : text , start : j , end : cuesSepList.length-1});
+
+    return listOutput
 }
 
-    cuesTextList+= cues[i].text.replace(/\n/g, ' ') + " "
-  }
-  return cuesTextList
-}
 
 function getTranslation (words, callback) {
 
