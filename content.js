@@ -39,8 +39,7 @@ async function openBilingual () {
           {
               if((cues[i][j] == '.' ||
               cues[i][j] == '?' ||
-              cues[i][j] == '!' ||
-              cues[i][j] == '"') && cues[i][j+1] == undefined)
+              cues[i][j] == '!') && cues[i][j+1] == undefined)
               {
               endSentence.push(i)
               }
@@ -54,7 +53,7 @@ async function openBilingual () {
         getTranslation(cuesTextList[n].text, translatedText => 
           { 
 
-          var translatedList = translatedText.split(' _~_')
+          var translatedList = translatedText.split(' _ * _ .')
           translatedList.splice(-1,1)
 
           for(let i=cuesTextList[n].start;i<=cuesTextList[n].end;i++)
@@ -75,7 +74,7 @@ async function openBilingual () {
             }
           }
         });
-        await sleep(5000)
+        await sleep(500)
       };
 
     }
@@ -97,19 +96,17 @@ function getTexts(cues_sep)
     {
 
     if(cues_sep[i][cues_sep[i].length-1] == '.')
-        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, ". _~_ ")
+        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "._~_")
     else if(cues_sep[i][cues_sep[i].length-1] == '?')
-        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "? _~_ ")
+        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "?_~_")
     else if(cues_sep[i][cues_sep[i].length-1] == '!')
-        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "! _~_ ")
-    else if(cues_sep[i][cues_sep[i].length-1] == '"')
-        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "\" _~_ ")
+        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "!_~_")
 
     cues_sep[i] = cues_sep[i].replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
     cuesTextList+= cues_sep[i].replace(/\n/g, ' ') + " "
     }
 
-    var cuesSepList = cuesTextList.split(' _~_')
+    var cuesSepList = cuesTextList.split('_~_')
     cuesSepList.splice(-1,1)
 
     let listOutput = []
@@ -127,7 +124,7 @@ function getTexts(cues_sep)
             
         }
         else
-        {   var temp_punctuation = cuesSepList[i][cuesSepList[i].length-1]+" _~_ "
+        {   var temp_punctuation = cuesSepList[i][cuesSepList[i].length-1]+" _ * _ . "
             temp_punctuation = cuesSepList[i].substr(0,cuesSepList[i].length-1) + temp_punctuation
             cuesSepList[i] = temp_punctuation
             text+=cuesSepList[i]
