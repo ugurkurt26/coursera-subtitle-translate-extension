@@ -53,7 +53,7 @@ async function openBilingual () {
         getTranslation(cuesTextList[n].text, translatedText => 
           { 
 
-          var translatedList = translatedText.split(' _ * _ .')
+          var translatedList = translatedText.split('_ * _ ')
           translatedList.splice(-1,1)
 
           for(let i=cuesTextList[n].start;i<=cuesTextList[n].end;i++)
@@ -62,6 +62,7 @@ async function openBilingual () {
             {
               for(let j=endSentence[i-1]+1;j<=endSentence[i];j++)
               {
+                //translatedList[i-cuesTextList[n].start].splice(0,3)
                 cues_org[j].text = translatedList[i-cuesTextList[n].start]
               }
             }
@@ -69,6 +70,7 @@ async function openBilingual () {
             {
               for(let j=0;j<=endSentence[i];j++)
               {
+                //translatedList[i].splice(0,3)
                 cues_org[j].text = translatedList[i]
               }
             }
