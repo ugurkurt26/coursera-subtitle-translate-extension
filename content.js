@@ -63,7 +63,11 @@ async function openBilingual () {
           {
             if(i!=0)
             {
-              translatedList[i-cuesTextList[n].start] = translatedList[i-cuesTextList[n].start].substring(2)
+              if(translatedList[i-cuesTextList[n].start][0] == ".")
+                translatedList[i-cuesTextList[n].start] = translatedList[i-cuesTextList[n].start].substring(1)
+              else if(translatedList[i-cuesTextList[n].start][1] == ".")
+                translatedList[i-cuesTextList[n].start] = translatedList[i-cuesTextList[n].start].substring(2)
+                
               for(let j=endSentence[i-1]+1;j<=endSentence[i];j++)
               {
                 cues_org[j].text = translatedList[i-cuesTextList[n].start]
