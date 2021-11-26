@@ -35,16 +35,20 @@ async function openBilingual () {
       var endSentence = []
       for(let i=0;i<cues.length;i++)
       {
-          for(let j=0;j<cues[i].length;j++)
+        if(cues[i+1] != undefined)
+        {
+          if(cues[i+1][0] == cues[i+1][0].toUpperCase() || cues[i+1][1] == cues[i+1][1].toUpperCase())
           {
-              if((cues[i][j] == '.' ||
-              cues[i][j] == '?' ||
-              cues[i][j] == '!') && cues[i][j+1] == undefined)
-              {
+            if(cues[i][cues[i].length-1] == '.')
               endSentence.push(i)
-              }
+            else if(cues[i][cues[i].length-1] == '?')
+              endSentence.push(i)
+            else if(cues[i][cues[i].length-1] == '!')
+              endSentence.push(i)
           }
+        }
       }
+      endSentence.push(cues.length-1)
 
       var cuesTextList = getTexts(cues)
 
@@ -54,7 +58,6 @@ async function openBilingual () {
           { 
 
           var translatedList = translatedText.split('_ * _')
-          translatedList.splice(-1,1)
 
           for(let i=cuesTextList[n].start;i<=cuesTextList[n].end;i++)
           {
@@ -95,20 +98,24 @@ function getTexts(cues_sep)
     let cuesTextList = ""
     for(let i=0;i < cues_sep.length;i++)
     {
+      if(cues_sep[i+1] != undefined)
+      {
+        if(cues_sep[i+1][0] == cues_sep[i+1][0].toUpperCase() || cues_sep[i+1][1] == cues_sep[i+1][1].toUpperCase())
+        {
+          if(cues_sep[i][cues_sep[i].length-1] == '.')
+            cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "._~_")
+          else if(cues_sep[i][cues_sep[i].length-1] == '?')
+            cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "?_~_")
+          else if(cues_sep[i][cues_sep[i].length-1] == '!')
+            cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "!_~_")
+        }
+      }
 
-    if(cues_sep[i][cues_sep[i].length-1] == '.')
-        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "._~_")
-    else if(cues_sep[i][cues_sep[i].length-1] == '?')
-        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "?_~_")
-    else if(cues_sep[i][cues_sep[i].length-1] == '!')
-        cues_sep[i] = cues_sep[i].replaceAt(cues_sep[i].length-1, "!_~_")
-
-    cues_sep[i] = cues_sep[i].replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
-    cuesTextList+= cues_sep[i].replace(/\n/g, ' ') + " "
+      cues_sep[i] = cues_sep[i].replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+      cuesTextList+= cues_sep[i].replace(/\n/g, ' ') + " "
     }
-
+    
     var cuesSepList = cuesTextList.split('_~_')
-    cuesSepList.splice(-1,1)
 
     let listOutput = []
     let text = "";
